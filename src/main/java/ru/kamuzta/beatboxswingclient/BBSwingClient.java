@@ -30,7 +30,7 @@ public class BBSwingClient {
     private JList<Message> incomingList;
     private JTextField userMessage;
     private ArrayList<JCheckBox> checkboxList;
-    private Vector<Message> messages = new Vector<>(); //TODO change vector to smth
+    private Vector<Message> messages = new Vector<>();
     private HashMap<String, boolean[]> otherSeqsMap = new HashMap<>();
     private Sequencer sequencer;
     private Sequence sequence;
