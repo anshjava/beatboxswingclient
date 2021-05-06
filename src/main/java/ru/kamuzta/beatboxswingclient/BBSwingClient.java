@@ -96,7 +96,7 @@ public class BBSwingClient {
         saveMenuItem.addActionListener(new SaveMenuListener());
         JMenuItem loadMenuItem = new JMenuItem("Load melody");
         loadMenuItem.addActionListener(new LoadMenuListener());
-        JMenuItem connectMenuItem = new JMenuItem("Select server");
+        JMenuItem connectMenuItem = new JMenuItem("Connect to new server");
         connectMenuItem.addActionListener(new ConnectMenuListener());
 
         menuBar.add(connectMenuItem);
@@ -174,7 +174,7 @@ public class BBSwingClient {
             e.printStackTrace();
         }
     }
-
+    //Connect to REST server endpoint and check if connection is ok
     private String checkConnection() {
         StringBuilder response = new StringBuilder();
         String exceptions = "";
@@ -264,6 +264,7 @@ public class BBSwingClient {
         return event;
     }
 
+    //Create message from userName, Date + text + melody and send to REST Server
     private class MySendMessageListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -341,6 +342,7 @@ public class BBSwingClient {
         }
     }
 
+    //play music from smbd's message
     private class MyListSelectionListener implements ListSelectionListener {
         @Override
         public void valueChanged(ListSelectionEvent e) {
@@ -348,14 +350,15 @@ public class BBSwingClient {
                 Message selected = incomingList.getSelectedValue();
                 if (selected != null) {
                     boolean[] selectedState = otherSeqsMap.get(selected.toString());
-                    changeSequence(selectedState);
                     sequencer.stop();
+                    changeSequence(selectedState);
                     buildTrackAndStart();
                 }
             }
         }
     }
 
+    //save current melody to txt file
     private class SaveMenuListener implements ActionListener {
 
         @Override
@@ -394,7 +397,7 @@ public class BBSwingClient {
         }
     }
 
-
+    //load melody from txt file and play
     private class LoadMenuListener implements ActionListener {
 
         @Override
@@ -417,10 +420,11 @@ public class BBSwingClient {
                         arrayToLoad[j + (16 * i)] = Boolean.parseBoolean(flags[j]);
                     }
                 }
-                changeSequence(arrayToLoad);
-                sequencer.stop();
-                buildTrackAndStart();
                 br.close();
+                sequencer.stop();
+                changeSequence(arrayToLoad);
+                buildTrackAndStart();
+
                 JOptionPane.showMessageDialog(theFrame, LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")) + " melody has been loaded from file " + file);
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(theFrame, LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")) + " couldn't load the melody from " + file);
@@ -428,7 +432,7 @@ public class BBSwingClient {
         }
     }
 
-
+    //Configure connection to new RESTful Beatbox Server
     private class ConnectMenuListener implements ActionListener {
 
         @Override
@@ -437,7 +441,7 @@ public class BBSwingClient {
             serverIp = JOptionPane.showInputDialog(theFrame, "Enter server IP-address:", "beatboxrestfulserver.kamuzta.ru");
             serverPort = JOptionPane.showInputDialog(theFrame, "Enter server port:", "80");
             JOptionPane.showMessageDialog(theFrame, checkConnection());
-            //clearing memory from old messages from different server
+            //clearing memory from old messages from previous server
             messages.clear();
             otherSeqsMap.clear();
             incomingList.setListData(messages);
@@ -445,7 +449,7 @@ public class BBSwingClient {
         }
     }
 
-
+    //Task for Thread to get messages from REST server every 2sec.
     private class RemoteReader implements Runnable {
 
         @Override
@@ -472,6 +476,7 @@ public class BBSwingClient {
 
         }
 
+        //Connect to REST server, read array of Messages and pack them into List
         private List<Message> getChat() {
             List<Message> messages = new ArrayList<>();
             ObjectMapper mapper = getJsonMapper();
@@ -511,7 +516,7 @@ public class BBSwingClient {
 
     }
 
-
+    //Create, configure and return ObjectMapper for JSON serialization
     private ObjectMapper getJsonMapper() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new ParameterNamesModule())

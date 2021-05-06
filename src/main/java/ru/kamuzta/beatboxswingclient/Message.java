@@ -85,7 +85,7 @@ public class Message implements Comparable<Message> {
         return result;
     }
 
-    //To provide storaging messages in order
+    //To storage messages in order
     @Override
     public int compareTo(Message o) {
         int result;
