@@ -1,5 +1,8 @@
 package ru.kamuzta.beatboxswingclient;
 
+//TODO добавить ограничения по колву символов в полях согласно БД
+//TODO перенастроить лоад и сейф мелоди на внутренний метод Message
+//TODO настроить часовой пояс при отображении времени в чате
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
