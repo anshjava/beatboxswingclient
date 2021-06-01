@@ -1,7 +1,6 @@
 package ru.kamuzta.beatboxswingclient;
 
 //TODO добавить ограничения по колву символов в полях согласно БД
-//TODO перенастроить лоад и сейф мелоди на внутренний метод Message
 //TODO настроить часовой пояс при отображении времени в чате
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -177,6 +176,7 @@ public class BBSwingClient {
             e.printStackTrace();
         }
     }
+
     //Connect to REST server endpoint and check if connection is ok
     private String checkConnection() {
         StringBuilder response = new StringBuilder();
@@ -195,7 +195,7 @@ public class BBSwingClient {
             in.close();
             connection.disconnect();
         } catch (IOException e) {
-            exceptions =e.getMessage();
+            exceptions = e.getMessage();
         }
         if (responseCode == HttpURLConnection.HTTP_OK) {
             connectionStatus = true;
@@ -372,26 +372,14 @@ public class BBSwingClient {
         }
 
         private void saveFile(File file) {
-            boolean[] melodyToSave = new boolean[256];
+            boolean[] melodyArray = new boolean[256];
             for (int i = 0; i < 256; i++) {
                 JCheckBox check = checkboxList.get(i);
-                if (check.isSelected()) {
-                    melodyToSave[i] = true;
-                }
+                melodyArray[i] = check.isSelected();
             }
             try {
                 BufferedWriter bw = new BufferedWriter(new FileWriter(file));
-                for (int i = 0; i < 16; i++) {
-                    for (int j = 0; j < 16; j++) {
-                        bw.write(String.valueOf(melodyToSave[j + (16 * i)]));
-                        if (j != 15) {
-                            bw.write(";");
-                        }
-                    }
-                    if (i != 15) {
-                        bw.write("\n");
-                    }
-                }
+                bw.write(Message.convertSenderMelodyToText(melodyArray));
                 bw.close();
                 JOptionPane.showMessageDialog(theFrame, LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")) + " melody has been saved to file " + file);
             } catch (Exception e) {
@@ -411,21 +399,20 @@ public class BBSwingClient {
         }
 
         private void loadFile(File file) {
-            boolean[] arrayToLoad = new boolean[256];
+            StringBuilder stringBuilder = new StringBuilder();
             try {
                 BufferedReader br = new BufferedReader(new FileReader(file));
                 String line;
-                String[] flags;
                 for (int i = 0; i < 16; i++) {
                     line = br.readLine();
-                    flags = line.split(";");
-                    for (int j = 0; j < 16; j++) {
-                        arrayToLoad[j + (16 * i)] = Boolean.parseBoolean(flags[j]);
+                    stringBuilder.append(line);
+                    if (i != 15) {
+                        stringBuilder.append("\n");
                     }
                 }
                 br.close();
                 sequencer.stop();
-                changeSequence(arrayToLoad);
+                changeSequence(Message.convertTextToSenderMelody(stringBuilder.toString()));
                 buildTrackAndStart();
 
                 JOptionPane.showMessageDialog(theFrame, LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")) + " melody has been loaded from file " + file);
@@ -501,7 +488,8 @@ public class BBSwingClient {
                         stringBuilder.append(response).append("\n");
                     }
                     bufferedReader.close();
-                    messages = mapper.readValue(stringBuilder.toString(),new TypeReference<List<Message>>(){});
+                    messages = mapper.readValue(stringBuilder.toString(), new TypeReference<List<Message>>() {
+                    });
 
                 } else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
                     System.out.println("Server returned no messages");

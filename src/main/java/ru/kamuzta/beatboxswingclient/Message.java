@@ -58,12 +58,12 @@ public class Message implements Comparable<Message> {
         return this.senderMelody;
     }
 
-    public String convertSenderMelodyToText() {
+    public static String convertSenderMelodyToText(boolean[] melodyArray) {
         StringBuilder sb = new StringBuilder();
         try {
             for (int i = 0; i < 16; i++) {
                 for (int j = 0; j < 16; j++) {
-                    sb.append(senderMelody[j + (16 * i)]);
+                    sb.append(melodyArray[j + (16 * i)]);
                     if (j != 15) {
                         sb.append(";");
                     }
@@ -77,7 +77,7 @@ public class Message implements Comparable<Message> {
         return sb.toString();
     }
 
-    public boolean[] convertTextToSenderMelody(String text) {
+    public static boolean[] convertTextToSenderMelody(String text) {
         text = text.replaceAll("\n",";");
         String[] flags = text.split(";");
         boolean[] result = new boolean[flags.length];
