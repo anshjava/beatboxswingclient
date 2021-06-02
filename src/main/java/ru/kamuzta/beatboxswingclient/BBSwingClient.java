@@ -1,6 +1,5 @@
 package ru.kamuzta.beatboxswingclient;
 
-//TODO очищать message при нажатии кнопки "отправить"
 //TODO настроить часовой пояс при отображении времени в чате
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -555,7 +554,7 @@ public class BBSwingClient {
             if (overLimit > 0) {
                 text = text.substring(0, text.length() - overLimit);
             }
-            if (text.length() > 0) {
+            if (text.length() >= 0) {
                 super.replace(fb, offset, length, text, attrs);
             }
         }
