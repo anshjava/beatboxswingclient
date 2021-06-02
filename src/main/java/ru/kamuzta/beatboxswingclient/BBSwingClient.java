@@ -1,6 +1,7 @@
 package ru.kamuzta.beatboxswingclient;
 
 //TODO настроить часовой пояс при отображении времени в чате
+//TODO настроить автопрокрутку вниз в окне сообщений
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -548,15 +549,13 @@ public class BBSwingClient {
         }
 
         @Override
-        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+        public void replace(FilterBypass fb, int offset, int lengthToDelete, String text, AttributeSet attrs) throws BadLocationException {
             int currentLength = fb.getDocument().getLength();
-            int overLimit = (currentLength + text.length()) - limit - length;
+            int overLimit = (currentLength + text.length()) - limit - lengthToDelete;
             if (overLimit > 0) {
                 text = text.substring(0, text.length() - overLimit);
             }
-            if (text.length() >= 0) {
-                super.replace(fb, offset, length, text, attrs);
-            }
+            super.replace(fb, offset, lengthToDelete, text, attrs);
         }
 
 
