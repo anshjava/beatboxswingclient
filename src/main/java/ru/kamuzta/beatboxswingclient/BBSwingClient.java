@@ -1,6 +1,6 @@
 package ru.kamuzta.beatboxswingclient;
 
-//TODO добавить ограничения по колву символов в полях согласно БД
+//TODO очищать message при нажатии кнопки "отправить"
 //TODO настроить часовой пояс при отображении времени в чате
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -21,6 +21,10 @@ import java.awt.event.*;
 import java.net.*;
 import java.util.List;
 import javax.swing.event.*;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
 
 public class BBSwingClient {
     private String userName;
@@ -29,6 +33,7 @@ public class BBSwingClient {
     private boolean connectionStatus;
 
     private JFrame theFrame;
+    private JPanel background;
     private JList<Message> incomingList;
     private JTextField userMessage;
     private ArrayList<JCheckBox> checkboxList;
@@ -89,7 +94,7 @@ public class BBSwingClient {
         theFrame = new JFrame("BeatBox SwingClient");
         theFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         BorderLayout layout = new BorderLayout();
-        JPanel background = new JPanel(layout);
+        background = new JPanel(layout);
         background.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         checkboxList = new ArrayList<>();
 
@@ -130,6 +135,7 @@ public class BBSwingClient {
         buttonBox.add(sendMessage);
 
         userMessage = new JTextField();
+        ((AbstractDocument) userMessage.getDocument()).setDocumentFilter(new LimitDocumentFilter(70));
         buttonBox.add(userMessage);
 
         incomingList = new JList<>();
@@ -427,7 +433,20 @@ public class BBSwingClient {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            userName = JOptionPane.showInputDialog(theFrame, "Enter your name:", "Andrey");
+            //setting-up field with maximum 70 chars for Name
+            JPanel jPanelForUserName = new JPanel(new FlowLayout());
+
+            JTextField fieldForUserName = new JTextField(10);
+            ((AbstractDocument) fieldForUserName.getDocument()).setDocumentFilter(new LimitDocumentFilter(70));
+            jPanelForUserName.add(new JLabel("Enter your Name: "));
+            jPanelForUserName.add(fieldForUserName);
+            int answer = JOptionPane.showConfirmDialog(theFrame, jPanelForUserName, "Name", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null);
+            if (answer == JOptionPane.OK_OPTION && fieldForUserName.getText().length() > 0) {
+                userName = fieldForUserName.getText();
+            } else {
+                userName = "Anonymous";
+            }
+
             serverIp = JOptionPane.showInputDialog(theFrame, "Enter server IP-address:", "beatboxrestfulserver.kamuzta.ru");
             serverPort = JOptionPane.showInputDialog(theFrame, "Enter server port:", "80");
             JOptionPane.showMessageDialog(theFrame, checkConnection());
@@ -515,6 +534,34 @@ public class BBSwingClient {
                 .registerModule(new JavaTimeModule());
         mapper.findAndRegisterModules();
         return mapper;
+    }
+
+    //DocumentFilter to limit number of chars in inputForms
+    public class LimitDocumentFilter extends DocumentFilter {
+
+        private int limit;
+
+        public LimitDocumentFilter(int limit) {
+            if (limit <= 0) {
+                throw new IllegalArgumentException("Limit can not be <= 0");
+            }
+            this.limit = limit;
+        }
+
+        @Override
+        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+            int currentLength = fb.getDocument().getLength();
+            int overLimit = (currentLength + text.length()) - limit - length;
+            if (overLimit > 0) {
+                text = text.substring(0, text.length() - overLimit);
+            }
+            if (text.length() > 0) {
+                super.replace(fb, offset, length, text, attrs);
+            }
+        }
+
+
+
     }
 }
 
